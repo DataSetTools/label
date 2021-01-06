@@ -22,11 +22,11 @@ videos = [
 ]
 
 CURRENT_DIR = getcwd()
-cur_video = videos[9]
+cur_video = videos[10]
 print("Current Video: ", cur_video)
-VIDEO_DIR = "/home/dominique/Videos/MA/Videos/"
+VIDEO_DIR = "C:\\Users\\Dominique\\Desktop\\Masterthesis\\Labeling\\Source"
 IMAGE_DIR = splitext(cur_video)[0]
-IMAGE_DIR_PATH = join("/home/dominique/Bilder/", IMAGE_DIR)
+IMAGE_DIR_PATH = join("C:\\Users\\Dominique\\Desktop\\Masterthesis\\Labeling\\Target", IMAGE_DIR)
 FRAMERATE = 25
 START_IMG = 0
 
@@ -388,13 +388,13 @@ def video_to_images():
     videos_with_sub_dirs = [cur_video]
 
     for video_name in videos_with_sub_dirs:
-        video_path = VIDEO_DIR + video_name
+        video_path = join(VIDEO_DIR, video_name)
         print("video_path =", video_path)
         video_capture = cv.VideoCapture(video_path)
         success, image_frame = video_capture.read()
         counter = 0
         prefix = video_name.split('/')[-1][:-4]
-        save_dir = IMAGE_DIR_PATH + prefix + "/"
+        save_dir = join(IMAGE_DIR_PATH, prefix)
         print("save_dir =", save_dir)
 
         if not isdir(save_dir):
@@ -410,7 +410,7 @@ def video_to_images():
         print("Total Read frame", counter, "successfully")
 
 
-# video_to_images()
-generate_annotations_file()
+video_to_images()
+# generate_annotations_file()
 # refine_annotations()
 # show_and_refine_Annotations()
