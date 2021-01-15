@@ -1,6 +1,5 @@
 import csv
 from os.path import join, isdir
-from os import makedirs
 import sys
 from util import *
 
@@ -8,18 +7,20 @@ import cv2 as cv
 import numpy as np
 
 videos = [
-    "ARG 19 SS08 OBC NEU POV.mp4",  # 0
-    "ARG 19 SS16 OBC NEU POV.mp4",  # 1
-    "ARG 19 SS18 OBC OGI POV.mp4",  # 2
-    "FRA 19 SHD POV EVA.mp4",  # 3
-    "FRA 19 SHD POV NEU.mp4",  # 4
-    "MON 19 SS01 OBC NEU POV.mp4",  # 5
-    "SPA 18 SHD OBC NEU POV.mp4",  # 6
-    "MON 19 SS01 OBC OGI POV.mp4",  # 7
-    "VBOX202002140828390001_0001.mp4",  # 8
+    "ARG 19 SS08 OBC TAN POV.mp4",  # 0 ARG 19 SS08 OBC NEU POV.mp4
+    "ARG 19 SS16 OBC TAN POV.mp4",  # 1 ARG 19 SS16 OBC NEU POV.mp4
+    "ARG 19 SS18 OBC TAN POV.mp4",  # 2 ARG 19 SS18 OBC OGI POV.mp4
+    "FRA 19 SHD POV EVA.mp4",  # 3 missing video
+    "FRA 19 SHD POV NEU.mp4",  # 4 missing video
+    "MON 19 SS01 OBC NEU POV.mp4",  # 5 not used
+    "SPA 18 SHD OBC TAN POV.mp4",  # 6 SPA 18 SHD OBC NEU POV.mp4
+    "MON 19 SS01 OBC NEU POV.mp4",  # 7 MON 19 SS01 OBC OGI POV.mp4
+    "SE 20200214.mp4",  # 8  VBOX202002140828390001_0001.mp4
     "FIN18_ss19lat_pov.mp4",  # 9
-    "ITA18_ss18eva_pov.mp4"  # 10
+    "ITA18_ss18eva_pov.mp4",  # 10
+    "TUR18_ss05lap_pov.mp4"  # 11
 ]
+all_video_paths = [elem for idx, elem in enumerate(glob("/home/dominique/Videos/WRC_Videos/*.mp4"))]
 
 CURRENT_DIR = getcwd()
 cur_video = videos[10]
@@ -32,6 +33,7 @@ START_IMG = 0
 
 # list all images and sort them
 all_images = get_all_files(IMAGE_DIR_PATH, FRAMERATE, START_IMG)
+print(len(all_images), "Images e.g.:", all_images[0:3])
 annotation_path = get_annotation_csv(CURRENT_DIR)
 
 img_counter = 0
@@ -123,7 +125,7 @@ def generate_annotations_file():
     while img_counter < len(all_images):
 
         cv.imshow(all_images[img_counter], image)
-        k = cv.waitKeyEx(0)
+        k = cv.waitKey(0)  # waitKeyEx(0)
         print("k =", k)
         if k in [115, 112, 103] and len(temp_refPt) > 0:
             if k == 115:  # 115 corresponds to s (streets)
@@ -197,14 +199,7 @@ def generate_annotations_file():
                         print_reached_end()
                         temp_refPt = old_temp.copy()
                         break
-            for idx, elem in enumerate(temp_refPt):
-                x, y = elem
-                cv.circle(image, (x, y), 3, (0, 255, 0))
-                if idx > 0:
-                    cv.line(image, temp_refPt[idx - 1], temp_refPt[idx], (0, 255, 0))
-                last_img.append(image.copy())
-
-            cv.imshow(all_images[img_counter], image)
+            draw_line()
         if 48 <= k <= 57 or k == 223:  # corresponds to the number keys 0 up to 9, this gives the first predefined mask
             temp_refPt = []
             refPt = []
@@ -323,7 +318,7 @@ def generate_annotations_file():
             image = cv.resize(image, dim)
             last_img = [image.copy()]
             create_window(all_images[img_counter])
-        if k == 65535:  # delete
+        if k == 65535 or k == 255:  # delete
             temp_refPt = []
             refPt = []
             image = cv.imread(all_images[img_counter])
@@ -333,11 +328,12 @@ def generate_annotations_file():
             cv.setMouseCallback(all_images[img_counter], track_clicks)
         if k == 27:  # escape key
             cv.setWindowProperty(all_images[img_counter], cv.WND_PROP_FULLSCREEN, cv.WINDOW_NORMAL)
+            print(cv.getWindowProperty(all_images[img_counter], cv.WND_PROP_FULLSCREEN))
             # img_counter = len(all_images)
         if k == 113:  # exit=q
             sys.exit(0)
 
-        print("You typed: key =", k)
+        print("You typed: key =", k, len(last_img))
 
 
 def refine_annotations():
@@ -410,7 +406,14 @@ def video_to_images():
         print("Total Read frame", counter, "successfully")
 
 
-video_to_images()
-# generate_annotations_file()
-# refine_annotations()
-# show_and_refine_Annotations()
+def main():
+    # video_to_images(IMAGE_DIR_PATH, VIDEO_DIR, cur_video, frame_rate=FRAMERATE)
+    # copy_files_to(get_all_files(IMAGE_DIR_PATH), IMAGE_DIR_PATH + "_rate25")
+    generate_annotations_file()
+    # refine_annotations()
+    # show_and_refine_Annotations()
+    return 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
